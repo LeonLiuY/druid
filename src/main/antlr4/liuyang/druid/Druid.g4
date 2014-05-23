@@ -4,17 +4,15 @@ druid: statement*;
 
 statement: define | assign | extend;
 
-define : 'var' ID ';';
+define : 'var' names+=ID (',' names+=ID)* ';';
 
-assign : ID '=' value ';';
+assign : ID '=' expr ';';
 
-extend: ID '<-' ID ';';
+extend: ID '<-' expr ';';
 
-value: ID | INT;
+expr : '-' expr #negExpr| '(' expr ')' #parenExpr| left=expr (op='*' | op='/') right=expr #opExpr| left=expr (op='+' | op='-') right=expr #opExpr | (ID | INT) #valueExpr;
 
-           
-           
-           
+
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 
 INT : ('0'..'9')+ ;
