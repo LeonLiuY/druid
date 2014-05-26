@@ -29,10 +29,10 @@ public class MyDruidListener extends DruidBaseListener {
         public DependencyEdge(ExprContext exprContext) {
             this.exprContext = exprContext;
         }
-        
+
     }
-    private DirectedGraph<String, DependencyEdge> dependencyGraph = new DefaultDirectedGraph<>(
-            DependencyEdge.class);
+
+    private DirectedGraph<String, DependencyEdge> dependencyGraph = new DefaultDirectedGraph<>(DependencyEdge.class);
 
     public Map<String, Integer> getValues() {
         return values;
@@ -43,25 +43,30 @@ public class MyDruidListener extends DruidBaseListener {
         for (TerminalNode node : ctx.ID()) {
             String name = node.getText();
             if (values.containsKey(name)) {
-                throw new IllegalStateException("variable " + name
+                throw new IllegalStateException("variable "
+                        + name
                         + " already defined!");
             } else {
                 values.put(name, null);
             }
         }
-
     }
 
     @Override
     public void enterAssign(AssignContext ctx) {
         String name = ctx.ID().getText();
+        clearDependency(name);
         if (!values.containsKey(name)) {
-            throw new IllegalStateException("variable " + name
+            throw new IllegalStateException("variable "
+                    + name
                     + " not defined!");
         } else {
+            Integer originalValue = values.get(name);
             Integer value = val(ctx.expr());
-            values.put(name, value);
-            trigger(name);
+            if (!value.equals(originalValue)) {
+                values.put(name, value);
+                trigger(name);
+            }
         }
     }
 
@@ -83,12 +88,14 @@ public class MyDruidListener extends DruidBaseListener {
             if (valueExprContext.ID() != null) {
                 String name = valueExprContext.ID().getText();
                 if (!values.containsKey(name)) {
-                    throw new IllegalStateException("variable " + name
+                    throw new IllegalStateException("variable "
+                            + name
                             + " not defined!");
                 } else {
                     Integer result = values.get(name);
                     if (result == null) {
-                        throw new IllegalStateException("variable " + name
+                        throw new IllegalStateException("variable "
+                                + name
                                 + " is not initialized!");
                     } else {
                         referredVariables.add(name);
@@ -108,34 +115,41 @@ public class MyDruidListener extends DruidBaseListener {
             OpExprContext opExprContext = (OpExprContext) value;
             String op = opExprContext.op.getText();
             switch (op) {
-            case "+":
-                return val(opExprContext.left) + val(opExprContext.right);
-            case "-":
-                return val(opExprContext.left) - val(opExprContext.right);
-            case "*":
-                return val(opExprContext.left) * val(opExprContext.right);
-            case "/":
-                return val(opExprContext.left) / val(opExprContext.right);
-            default:
-                throw new IllegalStateException("Unexpected!");
+                case "+":
+                    return val(opExprContext.left)
+                            + val(opExprContext.right);
+                case "-":
+                    return val(opExprContext.left)
+                            - val(opExprContext.right);
+                case "*":
+                    return val(opExprContext.left)
+                            * val(opExprContext.right);
+                case "/":
+                    return val(opExprContext.left)
+                            / val(opExprContext.right);
+                default:
+                    throw new IllegalStateException("Unexpected!");
             }
         } else {
             throw new IllegalStateException("Unexpected!");
         }
     }
 
-    @Override
-    public void enterExtend(ExtendContext ctx) {
-        String name = ctx.ID().getText();
+    private void clearDependency(String name) {
         if (dependencyGraph.containsVertex(name)) {
-            for (DependencyEdge edge : dependencyGraph
-                    .incomingEdgesOf(name)) {
+            for (DependencyEdge edge : dependencyGraph.incomingEdgesOf(name)) {
                 dependencyGraph.removeEdge(edge);
             }
             if (dependencyGraph.edgesOf(name).isEmpty()) {
                 dependencyGraph.removeVertex(name);
             }
         }
+    }
+
+    @Override
+    public void enterExtend(ExtendContext ctx) {
+        String name = ctx.ID().getText();
+        clearDependency(name);
         ExprContext expr = ctx.expr();
         referredVariables = new HashSet<>();
         Integer result = val(expr);
@@ -145,8 +159,7 @@ public class MyDruidListener extends DruidBaseListener {
                 dependencyGraph.addVertex(from);
                 dependencyGraph.addEdge(from, name, new DependencyEdge(expr));
             }
-            CycleDetector<String, DependencyEdge> cycleDetector = new CycleDetector<>(
-                    dependencyGraph);
+            CycleDetector<String, DependencyEdge> cycleDetector = new CycleDetector<>(dependencyGraph);
             if (cycleDetector.detectCycles()) {
                 throw new IllegalStateException("cycle dependency found!");
             }
