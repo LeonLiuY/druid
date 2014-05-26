@@ -19,7 +19,6 @@ public class DruidTest extends DruidTestBase {
                 + " b = a;"
                 + " c <- a;"
                 + " a = 2;");
-        System.out.println(result);
         assertEquals(new Integer(2), result.get("a"));
         assertEquals(new Integer(1), result.get("b"));
         assertEquals(new Integer(2), result.get("c"));
@@ -31,7 +30,6 @@ public class DruidTest extends DruidTestBase {
                 + " c <- a + b;"
                 + " a = 3;"
                 + " b = 4;");
-        System.out.println(result);
         assertEquals(new Integer(3), result.get("a"));
         assertEquals(new Integer(4), result.get("b"));
         assertEquals(new Integer(7), result.get("c"));
@@ -56,7 +54,6 @@ public class DruidTest extends DruidTestBase {
                 + " var c, d;"
                 + " c <- a;"
                 + " a = 2;");
-        System.out.println(result);
         assertEquals(new Integer(2), result.get("a"));
         assertEquals(new Integer(1), result.get("b"));
         assertEquals(new Integer(2), result.get("c"));
@@ -89,7 +86,6 @@ public class DruidTest extends DruidTestBase {
                 + " b = 12 / 3 * 2;"
                 + " c = 12 / (3 * 2);"
                 + " d = a - (b + c);");
-        System.out.println(result);
         assertEquals(new Integer(0), result.get("a"));
         assertEquals(new Integer(8), result.get("b"));
         assertEquals(new Integer(2), result.get("c"));
@@ -104,7 +100,6 @@ public class DruidTest extends DruidTestBase {
                 + " c <-  a + b;"
                 + " d <- c * 2 - (a * b);"
                 + " a = 3; b <- a + 1; a = 2;");
-        System.out.println(result);
         assertEquals(new Integer(2), result.get("a"));
         assertEquals(new Integer(3), result.get("b"));
         assertEquals(new Integer(5), result.get("c"));
