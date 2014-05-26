@@ -74,8 +74,12 @@ public class MyDruidListener extends DruidBaseListener {
         if (dependencyGraph.containsVertex(name)) {
             for (DependencyEdge edge : dependencyGraph.outgoingEdgesOf(name)) {
                 String target = dependencyGraph.getEdgeTarget(edge);
-                values.put(target, val(edge.exprContext));
-                trigger(target);
+                Integer originalValue = values.get(target);
+                Integer value = val(edge.exprContext);
+                if (!value.equals(originalValue)) {
+                    values.put(target, value);
+                    trigger(target);
+                }
             }
         }
     }
