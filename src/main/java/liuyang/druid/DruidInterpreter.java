@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import liuyang.druid.DruidParser.ArrayCallExprContext;
 import liuyang.druid.DruidParser.ArrayContext;
 import liuyang.druid.DruidParser.AssignContext;
 import liuyang.druid.DruidParser.DefineContext;
@@ -94,6 +95,25 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
             return DataType.STRING;
         } else {
             throw new IllegalStateException("unexpected!");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object visitArrayCallExpr(ArrayCallExprContext ctx) {
+        Object value = visit(ctx.arr);
+        DataType dataType = judgeDataType(value);
+        if (dataType != DataType.ARRAY) {
+            throw new IllegalStateException("can not apply array operation on "
+                    + dataType);
+        } else {
+            List<Object> array = (List<Object>) value;
+            Object index = visit(ctx.index);
+            DataType indexDataType = judgeDataType(index);
+            if(indexDataType != DataType.INTEGER){
+                throw new IllegalStateException("array index should be integer");
+            }
+            return array.get((Integer) index);
         }
     }
 

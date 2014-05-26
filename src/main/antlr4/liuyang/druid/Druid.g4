@@ -10,7 +10,7 @@ assign : ID '=' expr ';';
 
 extend: ID '<-' expr ';';
 
-expr : (nil='nil' | ID | INT | array | hash) #valueExpr | ID '(' (args+=expr (',' args+=expr)*)? ')' #functionCallExpr | '-' expr #negExpr| '(' expr ')' #parenExpr| left=expr (op='*' | op='/') right=expr #opExpr| left=expr (op='+' | op='-') right=expr #opExpr;
+expr : (nil='nil' | ID | INT | array | hash) #valueExpr | arr=expr '[' index=expr ']' #arrayCallExpr | ID '(' (args+=expr (',' args+=expr)*)? ')' #functionCallExpr | '-' expr #negExpr| '(' expr ')' #parenExpr| left=expr (op='*' | op='/') right=expr #opExpr| left=expr (op='+' | op='-') right=expr #opExpr;
 
 function : 'def' name=ID '(' (params+=ID (',' params+=ID)*)? ')' '{' statement* '}' ;
 returnst : 'return' expr ';';

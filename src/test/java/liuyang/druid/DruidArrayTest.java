@@ -27,4 +27,14 @@ public class DruidArrayTest extends DruidTestBase {
         assertEquals(Arrays.asList(4, 5, 6), result.get("b"));
         assertEquals(Arrays.asList(2, 8, 4, 6), result.get("c"));
     }
+    
+    @Test
+    public void testArrayCall() throws IOException {
+        Map<String, Object> result = runner.run("var a, b, c; "
+                + " a = [1,2,3];" + " b <- a[1+1];"
+                + " c <- b + 2;" + " a = [2,3,4];");
+        assertEquals(Arrays.asList(2,3,4), result.get("a"));
+        assertEquals(new Integer(4), result.get("b"));
+        assertEquals(new Integer(6), result.get("c"));
+    }
 }
