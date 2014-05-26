@@ -19,8 +19,8 @@ b = 2;
 c = a + b;
 ```
 
-But all of them are one-time assignment, which means after executed this assignment, the value of the
-assignment target will not change until a next assignment comes.
+But all of them are one-time assignment, which means after executing this assignment, the value of the
+assignment target(left side) will not change until a next assignment of it comes.
 
 ```
 a = 1;
@@ -30,7 +30,7 @@ a = 3;      //c is 3
 b = 4;      //c is 3
 ```
 
-This **Druid** programming language is trying to support a new kind of `assignment` called **Reactive Assignment**, which, the value of the assignment target will change if any value of the assignment source changed. This means:
+This **Druid** programming language is trying to support a new kind of `assignment` called **Reactive Assignment**, which, the value of the assignment target will change if any value of the assignment source(right side) changed. This means:
 
 ```
 a = 1;
@@ -40,4 +40,4 @@ a = 3;      //c is 5 now!
 b = 4;      //hey! c is 7 now!
 ```
 
-This brings the native support of [Reactive Programming](http://en.wikipedia.org/wiki/Reactive_programming) into the language.
+This brings native support of [Reactive Programming](http://en.wikipedia.org/wiki/Reactive_programming) into the language level.
