@@ -2,7 +2,7 @@ grammar Druid;
 
 druid: statement*;
 
-statement: define | assign | extend;
+statement: define | assign | extend | function | returnst;
 
 define : 'var' names+=ID (',' names+=ID)* ';';
 
@@ -10,8 +10,10 @@ assign : ID '=' expr ';';
 
 extend: ID '<-' expr ';';
 
-expr : '-' expr #negExpr| '(' expr ')' #parenExpr| left=expr (op='*' | op='/') right=expr #opExpr| left=expr (op='+' | op='-') right=expr #opExpr | (ID | INT) #valueExpr;
+expr : (ID | INT) #valueExpr | ID '(' (args+=expr (',' args+=expr)*)? ')' #functionCallExpr | '-' expr #negExpr| '(' expr ')' #parenExpr| left=expr (op='*' | op='/') right=expr #opExpr| left=expr (op='+' | op='-') right=expr #opExpr;
 
+function : 'def' name=ID '(' (params+=ID (',' params+=ID)*)? ')' '{' statement* '}' ;
+returnst : 'return' expr ';';
 
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 

@@ -12,15 +12,18 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 public class DruidRunner {
 
-    Map<String, Integer> run(String code) throws IOException {
+    Map<String, Object> run(String code) throws IOException {
         DruidLexer lexer = new DruidLexer(new ANTLRInputStream(new ByteArrayInputStream(code.getBytes())));
         DruidParser parser = new DruidParser(new CommonTokenStream(lexer));
         DruidContext context = parser.druid();
-        if (parser.getNumberOfSyntaxErrors() != 0){
+        if (parser.getNumberOfSyntaxErrors() != 0) {
             throw new IllegalArgumentException("Input string contains syntax errors!");
         }
-        MyDruidListener listener = new MyDruidListener();
-        ParseTreeWalker.DEFAULT.walk(listener, context);
-        return listener.getValues();
+        FunctionScanner functionScanner = new FunctionScanner();
+        ParseTreeWalker.DEFAULT.walk(functionScanner, context);
+
+        DruidInterpreter interpreter = new DruidInterpreter(functionScanner.getFunctions());
+        interpreter.visitDruid(context);
+        return interpreter.getValues();
     }
 }

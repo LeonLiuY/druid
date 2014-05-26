@@ -7,13 +7,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class DruidTest {
-
-    private DruidRunner runner = new DruidRunner();
+public class DruidTest extends DruidTestBase {
 
     @Test
     public void druidTest() throws IOException {
-        Map<String, Integer> result = runner.run(" var a;"
+        Map<String, Object> result = runner.run(" var a;"
                 + " var b;"
                 + " var c;"
                 + " var d;"
@@ -52,7 +50,7 @@ public class DruidTest {
 
     @Test
     public void testMultiDefinition() throws IOException {
-        Map<String, Integer> result = runner.run(" var a, b;"
+        Map<String, Object> result = runner.run(" var a, b;"
                 + " a = 1;"
                 + " b = a;"
                 + " var c, d;"
@@ -86,7 +84,7 @@ public class DruidTest {
 
     @Test
     public void testExpr() throws IOException {
-        Map<String, Integer> result = runner.run(" var a, b, c, d;"
+        Map<String, Object> result = runner.run(" var a, b, c, d;"
                 + " a = 1 + 2 - 3;"
                 + " b = 12 / 3 * 2;"
                 + " c = 12 / (3 * 2);"
@@ -100,7 +98,7 @@ public class DruidTest {
 
     @Test
     public void testExprExtend() throws IOException {
-        Map<String, Integer> result = runner.run(" var a, b, c, d;"
+        Map<String, Object> result = runner.run(" var a, b, c, d;"
                 + " a = 1;"
                 + " b = 2;"
                 + " c <-  a + b;"
@@ -112,4 +110,5 @@ public class DruidTest {
         assertEquals(new Integer(5), result.get("c"));
         assertEquals(new Integer(4), result.get("d"));
     }
+
 }
