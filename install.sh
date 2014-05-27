@@ -20,7 +20,7 @@ rm -rf ~/.druid
 mkdir ~/.druid
 cp target/druid.jar ~/.druid
 echo "#!/bin/sh" > ~/.druid/druid
-echo "java -jar $HOME/.druid/druid.jar '$@'" >> ~/.druid/druid
+echo 'java -jar $HOME/.druid/druid.jar "$@"' >> ~/.druid/druid
 chmod +x ~/.druid/druid
 rm -rf $TDIR
 
