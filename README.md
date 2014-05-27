@@ -46,6 +46,8 @@ To see the usage examples, check the [test cases](src/test/java/liuyang/druid/Dr
 
 ## Installation
 
+Make sure you have **jdk8** and **maven** installed.
+
 ```bash
 $ curl https://raw.githubusercontent.com/liuyang1204/druid/master/install.sh | bash
 ```
