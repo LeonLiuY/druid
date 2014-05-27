@@ -64,8 +64,9 @@ public class DruidFunctionTest extends DruidTestBase {
                     + " b <- subtractTwo(addOne(a)*2);"
                     + " a = addOne(a); "
                     + " a = addOne(a); "
-                    + " a = subtractTwo(a + 3);");
-            assertEquals("223345", outContent.toString());
+                    + " a = subtractTwo(a + 3);"
+                    + " print('abc' + 'def');");
+            assertEquals("223345abcdef", outContent.toString());
             assertEquals(new Integer(4), result.get("a"));
             assertEquals(new Integer(8), result.get("b"));
         } finally {

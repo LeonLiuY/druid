@@ -181,6 +181,21 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
                                 + rightType
                                 + "!");
                 }
+            } else if (leftType == DataType.STRING) {
+                String leftStr = (String) leftValue;
+                String rightStr = (String) rightValue;
+                switch (op) {
+                    case "+":
+                        return leftStr.concat(rightStr);
+                    default:
+                        throw new IllegalStateException("undefined operator '"
+                                + op
+                                + "' between "
+                                + leftType
+                                + " and "
+                                + rightType
+                                + "!");
+                }
             } else {
                 throw new IllegalStateException("unexpected!");
             }
@@ -250,7 +265,9 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
                         return result;
                     }
                 }
-
+            case "STRING":
+                String str = node.getText().substring(1, node.getText().length() - 1);
+                return str;
             default:
                 return null;
         }
