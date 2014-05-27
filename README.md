@@ -43,3 +43,9 @@ b = 4;      //hey! c is 7 now!
 This brings native support of [Reactive Programming](http://en.wikipedia.org/wiki/Reactive_programming) into the language level.
 
 To see the usage examples, check the [test cases](src/test/java/liuyang/druid/DruidTest.java)
+
+## Installation
+
+```bash
+$ curl https://raw.githubusercontent.com/liuyang1204/druid/master/install.sh | bash
+```
