@@ -74,6 +74,8 @@
               <mainClass>liuyang.druid.DruidRunner</mainClass>
             </manifest>
           </archive>
+          <finalName>druid</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
         </configuration>
       </plugin>
     </plugins>
