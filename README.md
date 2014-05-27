@@ -42,8 +42,6 @@ b = 4;      //hey! c is 7 now!
 
 This brings native support of [Reactive Programming](http://en.wikipedia.org/wiki/Reactive_programming) into the language level.
 
-To see the usage examples, check the [test cases](src/test/java/liuyang/druid/DruidTest.java)
-
 ## Installation
 
 Make sure you have **Git**, **jdk8** and **maven** installed.
@@ -51,3 +49,18 @@ Make sure you have **Git**, **jdk8** and **maven** installed.
 ```bash
 $ curl https://raw.githubusercontent.com/liuyang1204/druid/master/install.sh | bash
 ```
+
+## Usage
+
+After installation, type:
+```bash
+$ druid
+```
+to get hint. Typically:
+```bash
+$ druid run file.druid
+```
+
+## Syntax
+
+A detailed language syntax specification is coming. For now, you can check the [test cases](src/test/java/liuyang/druid) for syntax example.
