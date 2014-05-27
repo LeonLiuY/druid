@@ -19,8 +19,12 @@ mvn clean assembly:assembly
 rm -rf ~/.druid
 mkdir ~/.druid
 cp target/druid.jar ~/.druid
-echo "druid='java -jar $HOME/.druid/druid.jar'" >> ~/.profile && source ~/.profile
-
+echo "#!/bin/sh" > ~/.druid/druid
+echo "java -jar $HOME/.druid/druid.jar '$@'" >> ~/.druid/druid
+chmod +x ~/.druid/druid
 rm -rf $TDIR
+
+echo "Installation finished!"
+echo 'Please add "export PATH=$PATH:$HOME/.druid" to your shell resource file'
 
 exit 0
