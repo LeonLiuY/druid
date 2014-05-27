@@ -1,11 +1,13 @@
 package liuyang.druid;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Map;
 
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class DruidFunctionTest extends DruidTestBase {
 
@@ -24,7 +26,7 @@ public class DruidFunctionTest extends DruidTestBase {
                 + " a = subtractTwo(a + 3);");
         assertEquals(new Integer(4), result.get("a"));
     }
-    
+
     @Test
     public void testFunctionWithExtend() throws IOException {
         Map<String, Object> result = runner.run("def addOne(target) {"
@@ -41,5 +43,33 @@ public class DruidFunctionTest extends DruidTestBase {
                 + " a = subtractTwo(a + 3);");
         assertEquals(new Integer(4), result.get("a"));
         assertEquals(new Integer(8), result.get("b"));
+    }
+
+    @Test
+    public void testBuildInFunction() throws IOException {
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+        try {
+            Map<String, Object> result = runner.run("def addOne(target) {"
+                    + " var a, b, c; "
+                    + " a = 1;"
+                    + " print(target + 1);"
+                    + " return target + 1;"
+                    + " } "
+                    + " def subtractTwo(target) {"
+                    + " return target - 2;"
+                    + " }"
+                    + " var a, b; "
+                    + " a = 1;"
+                    + " b <- subtractTwo(addOne(a)*2);"
+                    + " a = addOne(a); "
+                    + " a = addOne(a); "
+                    + " a = subtractTwo(a + 3);");
+            assertEquals("223345", outContent.toString());
+            assertEquals(new Integer(4), result.get("a"));
+            assertEquals(new Integer(8), result.get("b"));
+        } finally {
+            System.setOut(null);
+        }
     }
 }

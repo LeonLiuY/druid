@@ -16,7 +16,8 @@ public class FunctionScanner extends DruidBaseListener {
     @Override
     public void enterFunction(FunctionContext ctx) {
         String name = ctx.name.getText();
-        if (functions.containsKey(name)) {
+        if (Function.BUILT_IN_FUNCTIONS.containsKey(name)
+                || functions.containsKey(name)) {
             throw new IllegalStateException("function "
                     + name
                     + " already defined!");
