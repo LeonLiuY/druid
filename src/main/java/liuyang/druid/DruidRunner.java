@@ -59,6 +59,7 @@ public class DruidRunner {
     }
 
     private static void exitError() {
+        System.out.println(String.format("Druid v%s: ", DruidRunner.class.getPackage().getImplementationVersion()));
         System.out.println("Usage: ");
         System.out.println("\trun [file]");
         System.exit(1);

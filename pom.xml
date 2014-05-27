@@ -15,6 +15,12 @@
     <java.version>1.8</java.version>
   </properties>
 
+  <scm>
+    <connection>scm:git:git@github.com:liuyang1204/druid.git</connection>
+    <url>scm:git:git@github.com:liuyang1204/druid.git</url>
+    <developerConnection>scm:git:git@github.com:liuyang1204/druid.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
   <dependencies>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -72,11 +78,18 @@
           <archive>
             <manifest>
               <mainClass>liuyang.druid.DruidRunner</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
           </archive>
           <finalName>druid</finalName>
           <appendAssemblyId>false</appendAssemblyId>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5</version>
       </plugin>
     </plugins>
   </build>
