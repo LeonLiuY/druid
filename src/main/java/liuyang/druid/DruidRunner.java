@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Map;
 
 import liuyang.druid.DruidParser.DruidContext;
+import liuyang.druid.signal.FileSignals;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 public class DruidRunner {
+
+    private FileSignals fileSignals;
 
     Map<String, Object> run(String code) throws IOException {
         return run(new ByteArrayInputStream(code.getBytes()));
@@ -25,13 +28,20 @@ public class DruidRunner {
         DruidParser parser = new DruidParser(new CommonTokenStream(lexer));
         DruidContext context = parser.druid();
         if (parser.getNumberOfSyntaxErrors() != 0) {
-            throw new IllegalArgumentException("Input string contains syntax errors!");
+            throw new IllegalArgumentException(
+                    "Input string contains syntax errors!");
         }
         FunctionScanner functionScanner = new FunctionScanner();
         ParseTreeWalker.DEFAULT.walk(functionScanner, context);
 
-        DruidInterpreter interpreter = new DruidInterpreter(functionScanner.getFunctions());
+        DruidInterpreter interpreter = new DruidInterpreter(
+                functionScanner.getFunctions());
         interpreter.visitDruid(context);
+        fileSignals = new FileSignals(interpreter);
+        fileSignals.registerAll(interpreter.getFileSignalContexts());
+        while (fileSignals.size() > 0) {
+            fileSignals.scan();
+        }
         return interpreter.getValues();
     }
 
@@ -59,7 +69,8 @@ public class DruidRunner {
     }
 
     private static void exitError() {
-        System.out.println(String.format("Druid v%s: ", DruidRunner.class.getPackage().getImplementationVersion()));
+        System.out.println(String.format("Druid v%s: ", DruidRunner.class
+                .getPackage().getImplementationVersion()));
         System.out.println("Usage: ");
         System.out.println("\trun [file]");
         System.exit(1);

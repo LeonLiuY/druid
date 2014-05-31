@@ -1,6 +1,7 @@
 package liuyang.druid;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +22,23 @@ import liuyang.druid.DruidParser.NegExprContext;
 import liuyang.druid.DruidParser.OpExprContext;
 import liuyang.druid.DruidParser.ParenExprContext;
 import liuyang.druid.DruidParser.ReturnstContext;
+import liuyang.druid.DruidParser.SignalContext;
 import liuyang.druid.DruidParser.StatementContext;
 import liuyang.druid.Scope.DependencyEdge;
+import liuyang.druid.signal.FileSignal;
+import liuyang.druid.signal.Signal;
+import liuyang.druid.signal.SignalReceiver;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
 
-public class DruidInterpreter extends DruidBaseVisitor<Object> {
+public class DruidInterpreter extends DruidBaseVisitor<Object> implements
+        SignalReceiver {
 
     private Map<String, FunctionContext> functions;
+
+    private Map<SignalContext, FileSignal> fileSignalContexts = new HashMap<>();
 
     public DruidInterpreter(Map<String, FunctionContext> functions) {
         this.functions = functions;
@@ -43,13 +51,16 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
         return scopeStack.peek().getValues();
     }
 
+    public Map<SignalContext, FileSignal> getFileSignalContexts() {
+        return fileSignalContexts;
+    }
+
     @Override
     public Object visitDefine(DefineContext ctx) {
         for (TerminalNode node : ctx.ID()) {
             String name = node.getText();
             if (scopeStack.peek().contains(name)) {
-                throw new IllegalStateException("variable "
-                        + name
+                throw new IllegalStateException("variable " + name
                         + " already defined!");
             } else {
                 scopeStack.peek().addVariable(name);
@@ -68,8 +79,7 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
         String name = ctx.ID().getText();
         clearDependency(name);
         if (!scopeStack.peek().contains(name)) {
-            throw new IllegalStateException("variable "
-                    + name
+            throw new IllegalStateException("variable " + name
                     + " not defined!");
         } else {
             Object originalValue = scopeStack.peek().getValue(name);
@@ -128,73 +138,52 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
         DataType leftType = judgeDataType(leftValue);
         DataType rightType = judgeDataType(rightValue);
         if (leftType != rightType) {
-            throw new IllegalStateException("undefined operator '"
-                    + op
-                    + "' between "
-                    + leftType
-                    + " and "
-                    + rightType
-                    + "!");
+            throw new IllegalStateException("undefined operator '" + op
+                    + "' between " + leftType + " and " + rightType + "!");
         } else {
             if (leftType == DataType.INTEGER) {
                 Integer leftInteger = (Integer) leftValue;
                 Integer rightInteger = (Integer) rightValue;
                 switch (op) {
-                    case "+":
-                        return leftInteger
-                                + rightInteger;
-                    case "-":
-                        return leftInteger
-                                - rightInteger;
-                    case "*":
-                        return leftInteger
-                                * rightInteger;
-                    case "/":
-                        return leftInteger
-                                / rightInteger;
-                    default:
-                        throw new IllegalStateException("undefined operator '"
-                                + op
-                                + "' between "
-                                + leftType
-                                + " and "
-                                + rightType
-                                + "!");
+                case "+":
+                    return leftInteger + rightInteger;
+                case "-":
+                    return leftInteger - rightInteger;
+                case "*":
+                    return leftInteger * rightInteger;
+                case "/":
+                    return leftInteger / rightInteger;
+                default:
+                    throw new IllegalStateException("undefined operator '" + op
+                            + "' between " + leftType + " and " + rightType
+                            + "!");
                 }
             } else if (leftType == DataType.ARRAY) {
                 List<Object> leftList = (List<Object>) leftValue;
                 List<Object> rightList = (List<Object>) rightValue;
                 List<Object> result = new ArrayList<>(leftList);
                 switch (op) {
-                    case "+":
-                        result.addAll(rightList);
-                        return result;
-                    case "-":
-                        result.removeAll(rightList);
-                        return result;
-                    default:
-                        throw new IllegalStateException("undefined operator '"
-                                + op
-                                + "' between "
-                                + leftType
-                                + " and "
-                                + rightType
-                                + "!");
+                case "+":
+                    result.addAll(rightList);
+                    return result;
+                case "-":
+                    result.removeAll(rightList);
+                    return result;
+                default:
+                    throw new IllegalStateException("undefined operator '" + op
+                            + "' between " + leftType + " and " + rightType
+                            + "!");
                 }
             } else if (leftType == DataType.STRING) {
                 String leftStr = (String) leftValue;
                 String rightStr = (String) rightValue;
                 switch (op) {
-                    case "+":
-                        return leftStr.concat(rightStr);
-                    default:
-                        throw new IllegalStateException("undefined operator '"
-                                + op
-                                + "' between "
-                                + leftType
-                                + " and "
-                                + rightType
-                                + "!");
+                case "+":
+                    return leftStr.concat(rightStr);
+                default:
+                    throw new IllegalStateException("undefined operator '" + op
+                            + "' between " + leftType + " and " + rightType
+                            + "!");
                 }
             } else {
                 throw new IllegalStateException("unexpected!");
@@ -216,24 +205,42 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
     @Override
     public Object visitFunctionCall(FunctionCallContext ctx) {
         String name = ctx.ID().getText();
-        List<Object> argValues = ctx.args.stream().map(arg -> visit(arg)).collect(Collectors.toList());
+        List<Object> argValues = ctx.args.stream().map(arg -> visit(arg))
+                .collect(Collectors.toList());
         if (functions.containsKey(name)) {
             FunctionContext function = functions.get(name);
             return valFunction(function, argValues);
 
         } else if (Function.BUILT_IN_FUNCTIONS.containsKey(name)) {
-            return Function.BUILT_IN_FUNCTIONS.get(name).run(argValues.toArray());
+            return Function.BUILT_IN_FUNCTIONS.get(name).run(
+                    argValues.toArray());
         } else {
-            throw new IllegalStateException("function "
-                    + name
+            throw new IllegalStateException("function " + name
                     + " is not defined!");
         }
 
     }
 
     @Override
+    public Object visitSignal(SignalContext ctx) {
+        String signalName = ctx.SID().getText().substring(1);
+        switch (signalName) {
+        case "file":
+            String fileName = (String) visit(ctx.args.get(0));
+            FileSignal fileSignal = new FileSignal(fileName);
+            fileSignalContexts.put(ctx, fileSignal);
+            referredVariables.add(fileSignal.identity());
+            return fileSignal.value();
+        default:
+            throw new IllegalStateException("undefined signal type "
+                    + signalName + "!");
+        }
+    }
+
+    @Override
     public Object visitArray(ArrayContext ctx) {
-        return ctx.elements.stream().map(element -> visit(element)).collect(Collectors.toList());
+        return ctx.elements.stream().map(element -> visit(element))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -246,36 +253,36 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
     public Object visitTerminal(TerminalNode node) {
         String tokenName = DruidLexer.tokenNames[node.getSymbol().getType()];
         switch (tokenName) {
-            case "INT":
-                return new Integer(node.getText());
-            case "ID":
-                String name = node.getText();
-                if (!scopeStack.peek().contains(name)) {
-                    throw new IllegalStateException("variable "
-                            + name
-                            + " not defined!");
+        case "INT":
+            return new Integer(node.getText());
+        case "ID":
+            String name = node.getText();
+            if (!scopeStack.peek().contains(name)) {
+                throw new IllegalStateException("variable " + name
+                        + " not defined!");
+            } else {
+                Object result = scopeStack.peek().getValue(name);
+                if (result == null) {
+                    throw new IllegalStateException("variable " + name
+                            + " is not initialized!");
                 } else {
-                    Object result = scopeStack.peek().getValue(name);
-                    if (result == null) {
-                        throw new IllegalStateException("variable "
-                                + name
-                                + " is not initialized!");
-                    } else {
-                        referredVariables.add(name);
-                        return result;
-                    }
+                    referredVariables.add(name);
+                    return result;
                 }
-            case "STRING":
-                String str = node.getText().substring(1, node.getText().length() - 1);
-                return str;
-            default:
-                return null;
+            }
+        case "STRING":
+            String str = node.getText().substring(1,
+                    node.getText().length() - 1);
+            return str;
+        default:
+            return null;
         }
     }
 
     private void trigger(String name) {
         Scope scope = scopeStack.peek();
-        DirectedGraph<String, DependencyEdge> dependencyGraph = scope.getDependencyGraph();
+        DirectedGraph<String, DependencyEdge> dependencyGraph = scope
+                .getDependencyGraph();
         if (dependencyGraph.containsVertex(name)) {
             for (DependencyEdge edge : dependencyGraph.outgoingEdgesOf(name)) {
                 String target = dependencyGraph.getEdgeTarget(edge);
@@ -297,9 +304,7 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
             throw new IllegalStateException("function '"
                     + function.ID.getText()
                     + "' params number not matched, expected "
-                    + function.params.size()
-                    + " but was "
-                    + argValues.size()
+                    + function.params.size() + " but was " + argValues.size()
                     + "!");
         }
         for (int i = 0; i < function.params.size(); i++) {
@@ -326,7 +331,8 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
 
     private void clearDependency(String name) {
         Scope scope = scopeStack.peek();
-        DirectedGraph<String, DependencyEdge> dependencyGraph = scope.getDependencyGraph();
+        DirectedGraph<String, DependencyEdge> dependencyGraph = scope
+                .getDependencyGraph();
         if (dependencyGraph.containsVertex(name)) {
             for (DependencyEdge edge : dependencyGraph.incomingEdgesOf(name)) {
                 dependencyGraph.removeEdge(edge);
@@ -340,7 +346,8 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
     @Override
     public Object visitExtend(ExtendContext ctx) {
         Scope scope = scopeStack.peek();
-        DirectedGraph<String, DependencyEdge> dependencyGraph = scope.getDependencyGraph();
+        DirectedGraph<String, DependencyEdge> dependencyGraph = scope
+                .getDependencyGraph();
         String name = ctx.ID().getText();
         clearDependency(name);
         ExprContext expr = ctx.expr();
@@ -352,13 +359,19 @@ public class DruidInterpreter extends DruidBaseVisitor<Object> {
                 dependencyGraph.addVertex(from);
                 dependencyGraph.addEdge(from, name, new DependencyEdge(expr));
             }
-            CycleDetector<String, DependencyEdge> cycleDetector = new CycleDetector<>(dependencyGraph);
+            CycleDetector<String, DependencyEdge> cycleDetector = new CycleDetector<>(
+                    dependencyGraph);
             if (cycleDetector.detectCycles()) {
                 throw new IllegalStateException("cycle dependency found!");
             }
         }
         scope.setValue(name, result);
         return null;
+    }
+
+    @Override
+    public void receive(Signal signal) {
+        trigger(signal.identity());
     }
 
 }
