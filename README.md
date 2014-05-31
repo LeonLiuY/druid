@@ -9,7 +9,7 @@ Druid is a **reactive** programming language.
 
 ### Key Feature
 
-**Reactive Assignment**
+#### Reactive Assignment
 
 In most traditional programming language, there is `assignment`.
 
@@ -40,7 +40,39 @@ a = 3;      //c is 5 now!
 b = 4;      //hey! c is 7 now!
 ```
 
+**OK, you think the above is not that cool?**
+
+```
+a = [1, 2, 3];
+b = [4, 5, 6];
+c <- a + b; //we can join arrays on change
+print(c); //[1,2,3,4,5,6]
+a = [7, 8, 9];
+print(c); //[7,8,9,4,5,6]
+
+a = [1, 2, 3];
+b <- reverse(a); //we can apply functions
+print(b); //[3,2,1]
+a = [4, 5, 6];
+print(b); //[6,5,4]
+```
+
 This brings native support of [Reactive Programming](http://en.wikipedia.org/wiki/Reactive_programming) into the language level.
+
+#### Signal
+
+**Signal** is a value binding to an external event, such as file changing, socket arriving, mouse/keyborad event.
+It has the syntax `@[signalType](arg1, arg2, ...)`
+
+With **Reactive  Assignment**, we can do the magic.
+
+```
+a <- @file('a.txt'); //a file signal listening on the file 'a.txt'
+```
+
+once the file `a.txt` is changed on the disk, for example by using `echo "new" > a.txt` in the shell command, the value of `a` will be updated to `'new'` automatically.
+
+With the combination of **Reactive Assignment**, this can bring us magic!
 
 ## Installation
 
