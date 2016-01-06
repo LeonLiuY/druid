@@ -95,4 +95,4 @@ $ druid run file.druid
 
 ## Syntax
 
-A detailed language syntax specification is coming. For now, you can check the [test cases](src/test/java/liuyang/druid) for syntax example.
+You can check the [test cases](src/test/java/liuyang/druid) for syntax example.
