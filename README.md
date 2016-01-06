@@ -5,7 +5,7 @@ Druid programming language
 
 ## Introduction
 
-Druid is a **reactive** programming language.
+Druid is a **reactive** programming language. Now this is only a prototype to express the idea.
 
 ### Key Feature
 
